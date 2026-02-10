@@ -262,6 +262,28 @@ p {
   font-size: 1.4rem;
 }
 
+.diagnostico__grid {
+  margin-bottom: 1.4rem;
+}
+
+.diagnostico__cta {
+  background: #ffffff;
+  border: 1px solid #d7e5fb;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 24px rgba(20, 40, 70, 0.08);
+  padding: 1.4rem;
+}
+
+.diagnostico__cta .btn {
+  width: auto;
+}
+
+.diagnostico__microtext {
+  margin: 0.85rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
 .footer {
   background: #13233e;
   color: #d9e5ff;
@@ -326,6 +348,10 @@ p {
   }
 
   .btn {
+    width: 100%;
+  }
+
+  .diagnostico__cta .btn {
     width: 100%;
   }
 }
