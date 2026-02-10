@@ -46,3 +46,11 @@ document.querySelectorAll('[data-future-link]').forEach((button) => {
     setTimeout(() => button.classList.remove('pulse'), 250);
   });
 });
+
+// Feedback visual discreto para ações de abertura de formulário em nova aba.
+document.querySelectorAll('.js-pulse-on-click').forEach((button) => {
+  button.addEventListener('click', () => {
+    button.classList.add('pulse');
+    setTimeout(() => button.classList.remove('pulse'), 250);
+  });
+});
