@@ -388,32 +388,29 @@ p {
 
 .diagnostico-formulario-section .section__header {
   max-width: 100%;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.diagnostico-formulario-section .container {
+  width: min(1200px, 96vw);
 }
 
 .diagnostico-formulario-container {
   width: 100%;
-  margin: 0 auto;
-  padding: 1.2rem;
-  background: #fbfdff;
-  border: 1px solid #d6e4f8;
-  border-radius: 1.1rem;
-  box-shadow: 0 12px 28px rgba(20, 40, 70, 0.08);
+  margin: 0;
+  padding: 0;
 }
 
 .diagnostico-embed {
   width: 100%;
-  margin: 0 auto;
-  border: 1px solid #dbe8fa;
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: var(--surface);
-  box-shadow: 0 8px 20px rgba(20, 40, 70, 0.06);
+  margin: 0;
+  overflow-x: hidden;
 }
 
 .diagnostico-embed__iframe {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: 1600px;
   border: 0;
 }
@@ -428,11 +425,7 @@ p {
 }
 
 @media (max-width: 640px) {
-  .diagnostico-formulario-container {
-    padding: 0.8rem;
-  }
-
   .diagnostico-embed__iframe {
-    height: 1450px;
+    height: 1500px;
   }
 }
