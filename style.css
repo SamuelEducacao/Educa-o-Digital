@@ -53,6 +53,10 @@ p {
   background: #f5f8ff;
 }
 
+.section--institutional {
+  background: #f8f9fc;
+}
+
 .section__header {
   max-width: 760px;
   margin-bottom: 2rem;
@@ -300,6 +304,32 @@ p {
   color: #d7e2f9;
 }
 
+.institutional-quote {
+  margin: 0 auto;
+  max-width: 920px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.institutional-quote__text {
+  margin: 0;
+  font-family: "Nunito", sans-serif;
+  font-weight: 600;
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  line-height: 1.4;
+  color: #1f2a41;
+  text-wrap: balance;
+}
+
+.institutional-quote__author {
+  display: block;
+  margin-top: 1rem;
+  font-style: normal;
+  font-size: clamp(0.95rem, 1.7vw, 1.12rem);
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+
 
 .pulse {
   animation: pulseScale 0.25s ease;
@@ -336,6 +366,10 @@ p {
 @media (max-width: 640px) {
   .section {
     padding: 3.6rem 0;
+  }
+
+  .institutional-quote {
+    padding-inline: 0.35rem;
   }
 
   .card-grid--4,
