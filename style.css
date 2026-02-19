@@ -634,20 +634,28 @@ p {
 }
 
 .bncc-page .doc-layout {
-  width: 100%;
-  margin: 0 auto;
-  padding-inline: clamp(1rem, 5vw, 2.5rem);
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0;
 }
 
 .bncc-page .doc-viewer--wide {
   width: 100%;
-  padding: clamp(0.9rem, 1.8vw, 1.5rem);
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+  padding: clamp(0.75rem, 1.5vw, 1.25rem);
 }
 
 .bncc-page .doc-viewer--wide .doc-viewer__frame {
   width: 100%;
-  height: max(900px, calc(100vh - 170px));
-  min-height: 900px;
+  height: 90vh;
+  min-height: 90vh;
+  display: block;
+}
+
+.bncc-page .doc-viewer__actions {
+  justify-content: center;
 }
 
 @media (max-width: 640px) {
@@ -660,11 +668,13 @@ p {
   }
 
   .bncc-page .doc-layout {
-    padding-inline: 1rem;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    padding: 0;
   }
 
   .bncc-page .doc-viewer--wide .doc-viewer__frame {
-    height: 72vh;
-    min-height: 620px;
+    height: 90vh;
+    min-height: 90vh;
   }
 }
