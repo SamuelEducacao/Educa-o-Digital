@@ -85,7 +85,27 @@ p {
 .hero__content {
   position: relative;
   z-index: 1;
-  max-width: 840px;
+}
+
+.hero__layout {
+  display: grid;
+  grid-template-columns: 1fr minmax(260px, 500px);
+  gap: 2.2rem;
+  align-items: center;
+}
+
+.hero__text {
+  max-width: 760px;
+}
+
+.hero__visual {
+  display: flex;
+  justify-content: center;
+}
+
+.hero__visual img {
+  width: min(100%, 500px);
+  height: auto;
 }
 
 .hero h1 {
@@ -367,6 +387,14 @@ p {
 
   .highlight {
     grid-template-columns: 1fr;
+  }
+
+  .hero__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hero__visual {
+    display: none;
   }
 }
 
