@@ -585,3 +585,17 @@ p {
     min-height: 1200px;
   }
 }
+
+/* Correção de contraste dos cards de diagnóstico na página principal */
+#diagnostico .card {
+  background-color: #f8fbff;
+  color: #2c3e50;
+}
+
+#diagnostico .card h3 {
+  color: #0f1f3d;
+}
+
+#diagnostico .card p {
+  color: #2c3e50;
+}
