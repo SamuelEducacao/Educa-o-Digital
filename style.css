@@ -93,9 +93,11 @@ p {
   min-height: 82vh;
   display: flex;
   align-items: center;
-  background: radial-gradient(circle at 14% 20%, rgba(78, 134, 255, 0.35) 0%, transparent 35%),
-    radial-gradient(circle at 85% 22%, rgba(65, 192, 255, 0.24) 0%, transparent 37%),
-    linear-gradient(130deg, #071731 0%, #0a2246 52%, #103668 100%);
+  background-image: linear-gradient(135deg, rgba(5, 19, 41, 0.88) 5%, rgba(7, 31, 70, 0.72) 45%, rgba(18, 60, 114, 0.78) 100%),
+    url("imagem.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .hero__bg {
@@ -112,33 +114,8 @@ p {
   z-index: 1;
 }
 
-.hero__layout {
-  display: grid;
-  grid-template-columns: 1fr minmax(280px, 520px);
-  gap: 2.2rem;
-  align-items: center;
-}
-
-.hero__visual {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  border-radius: 1.15rem;
-  overflow: hidden;
-  box-shadow: var(--shadow), var(--glow);
-}
-
-.hero__visual::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(145deg, rgba(22, 87, 190, 0.42), rgba(15, 46, 109, 0.58));
-}
-
-.hero__visual img {
-  width: min(100%, 500px);
-  height: auto;
-  display: block;
+.hero__text {
+  max-width: 760px;
 }
 
 .hero h1 {
@@ -336,6 +313,49 @@ p {
   font-size: 1.4rem;
 }
 
+.split-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.95fr) minmax(320px, 1fr);
+  align-items: center;
+  gap: 1.4rem;
+  margin-bottom: 2rem;
+}
+
+.split-layout--institutional {
+  padding: 1.4rem;
+  background: linear-gradient(145deg, #f1f7ff 0%, #e8f1ff 100%);
+  border: 1px solid #d2e2fb;
+  border-radius: 1.2rem;
+}
+
+.split-layout--alt {
+  margin-bottom: 1.2rem;
+}
+
+.split-layout__media {
+  margin: 0;
+}
+
+.split-layout__media img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 14px 32px rgba(10, 34, 72, 0.22);
+}
+
+.split-layout__content h3,
+.split-layout__content h2 {
+  margin-bottom: 0.7rem;
+}
+
+.chip--light {
+  background: rgba(60, 109, 198, 0.12);
+  color: #2c5ab1;
+  border-color: rgba(72, 120, 208, 0.32);
+}
+
 .diagnostico__grid {
   margin-bottom: 1.4rem;
 }
@@ -454,12 +474,16 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .hero__layout {
+  .split-layout {
     grid-template-columns: 1fr;
   }
 
-  .hero__visual {
-    display: none;
+  .split-layout--institutional .split-layout__media {
+    order: -1;
+  }
+
+  .split-layout__media img {
+    max-width: 100%;
   }
 }
 
