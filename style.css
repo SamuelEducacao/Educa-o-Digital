@@ -330,6 +330,18 @@ p {
   margin-bottom: 1.4rem;
 }
 
+.diagnostico__grid .card {
+  color: #2c3e50;
+}
+
+.diagnostico__grid .card h3 {
+  color: #0f1f3d;
+}
+
+.diagnostico__grid .card p {
+  color: #2c3e50;
+}
+
 .diagnostico__cta {
   background: rgba(8, 30, 64, 0.86);
   border: 1px solid rgba(158, 194, 255, 0.35);
