@@ -214,6 +214,16 @@ p {
   background: rgba(255, 255, 255, 0.9);
 }
 
+.btn--disabled,
+.btn--disabled:hover,
+.btn--disabled:focus-visible {
+  cursor: default;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.85;
+}
+
 .btn--large {
   margin-top: 0.6rem;
   min-width: 220px;
@@ -598,4 +608,37 @@ p {
 
 #diagnostico .card p {
   color: #2c3e50;
+}
+
+.doc-viewer {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(181, 205, 242, 0.85);
+  border-radius: 1rem;
+  box-shadow: 0 28px 56px rgba(7, 24, 52, 0.35), 0 0 24px rgba(78, 134, 255, 0.16);
+  padding: 1.4rem;
+}
+
+.doc-viewer__frame {
+  width: 100%;
+  min-height: 70vh;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.doc-viewer__actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .doc-viewer {
+    padding: 0.8rem;
+  }
+
+  .doc-viewer__frame {
+    min-height: 60vh;
+  }
 }
