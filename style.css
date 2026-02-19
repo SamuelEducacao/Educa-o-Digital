@@ -633,6 +633,23 @@ p {
   flex-wrap: wrap;
 }
 
+.bncc-page .doc-layout {
+  width: 100%;
+  margin: 0 auto;
+  padding-inline: clamp(1rem, 5vw, 2.5rem);
+}
+
+.bncc-page .doc-viewer--wide {
+  width: 100%;
+  padding: clamp(0.9rem, 1.8vw, 1.5rem);
+}
+
+.bncc-page .doc-viewer--wide .doc-viewer__frame {
+  width: 100%;
+  height: max(900px, calc(100vh - 170px));
+  min-height: 900px;
+}
+
 @media (max-width: 640px) {
   .doc-viewer {
     padding: 0.8rem;
@@ -640,5 +657,14 @@ p {
 
   .doc-viewer__frame {
     min-height: 60vh;
+  }
+
+  .bncc-page .doc-layout {
+    padding-inline: 1rem;
+  }
+
+  .bncc-page .doc-viewer--wide .doc-viewer__frame {
+    height: 72vh;
+    min-height: 620px;
   }
 }
