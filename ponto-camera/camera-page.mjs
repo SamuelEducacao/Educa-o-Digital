@@ -20,7 +20,7 @@ export function mountCameraPage({win,doc,config=CONFIG}) {
     if(closed||event.source!==win.opener||!allowed.includes(event.origin))return;
     if(!nonce&&validMessage(event.data,TYPES.init)){
       win.clearTimeout(expiry);win.clearTimeout(readyTimer);origin=event.origin;nonce=event.data.nonce;expiry=win.setTimeout(()=>end('Sessão expirada. Volte ao ponto e abra a câmera novamente.'),config.sessionTimeoutMs);
-      render({phase:'idle',photo:null,message:'Toque em Abrir câmera. Fotografe o local, sem pessoas ou documentos.'});return;
+      render({phase:'idle',photo:null,message:'Toque em Abrir câmera. Faça uma foto ampla e nítida do local, sem pessoas ou documentos.'});return;
     }
     if(nonce&&sending&&trustedEvent(event,origin,win.opener)&&validMessage(event.data,TYPES.ack)&&event.data.nonce===nonce){
       end('Foto devolvida ao formulário. Confira lá se o armazenamento está habilitado. Nenhum ponto foi registrado por esta página.');try{win.close();}catch{}
