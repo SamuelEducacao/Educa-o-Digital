@@ -1,13 +1,24 @@
 import {CONFIG} from './config.mjs';
 import {TYPES,httpsOrigin,envelope,validMessage,trustedEvent} from './protocol.mjs';
 import {createCaptureController} from './capture-controller.mjs';
-export function mountCameraPage({win,doc,config=CONFIG}) {
-  const $=id=>doc.getElementById(id);let origin=null,nonce=null,closed=false,sending=false,expiry=null,ackTimeout=null,readyTimer=null;
+const CONNECTED='ponto-camera-connected'; // Optional V1 acknowledgement; old bridges safely ignore it.
+export function mountCameraPage({win,doc,config=CONFIG,now=()=>Date.now()}) {
+  const $=id=>doc.getElementById(id);const expectedOpener=win.opener;
   const allowed=config.allowedAppOrigins.map(httpsOrigin);
+  const deadline=now()+Math.min(180000,config.sessionTimeoutMs||180000);
+  let origin=null,nonce=null,closed=false,sending=false,expiry=null,ackTimeout=null,readyTimer=null,warningTimer=null,diagnostic='WAITING';
   const status=text=>{$('status').textContent=text;};
   const locked=()=>{for(const id of ['open','take','retake','discard','confirm'])$(id).disabled=true;};
   let controller;
-  function end(text){if(closed)return;closed=true;win.clearTimeout(expiry);win.clearTimeout(ackTimeout);win.clearTimeout(readyTimer);controller?.close();win.removeEventListener('message',receive);doc.removeEventListener('visibilitychange',onVisibility);win.removeEventListener('pagehide',onPageHide);locked();status(text);}
+  function end(text){if(closed)return;closed=true;for(const timer of [expiry,ackTimeout,readyTimer,warningTimer])win.clearTimeout(timer);controller?.close();nonce=null;origin=null;win.removeEventListener('message',receive);doc.removeEventListener('visibilitychange',onVisibility);win.removeEventListener('pagehide',onPageHide);$('reconnect').removeEventListener('click',reconnect);locked();$('reconnect').hidden=true;status(text);}
+  function alive(){
+    if(closed)return false;
+    if(now()>=deadline){end(nonce?'Sessão expirada. Volte ao ponto e abra a câmera novamente. [SESSION_DEADLINE]':'A conexão expirou. Volte ao ponto e abra a câmera novamente. [CONNECTION_DEADLINE]');return false;}
+    try{if(!expectedOpener||!win.opener||win.opener!==expectedOpener||expectedOpener.closed){end('A ligação com o formulário foi perdida. Volte ao ponto e abra a câmera novamente. [OPENER_LOST]');return false;}}catch{end('Não foi possível acessar a ligação com o formulário. [OPENER_LOST]');return false;}
+    return true;
+  }
+  function issue(code,text){if(closed||nonce)return;diagnostic=code;$('reconnect').hidden=false;status(text+' ['+code+']');}
+  function send(message,target){if(!alive())return false;try{expectedOpener.postMessage(message,target);return true;}catch{end('A ligação com o formulário foi perdida. [OPENER_LOST]');return false;}}
   function render(s){
     $('video').hidden=s.phase!=='live';$('preview').hidden=!s.photo;
     if(s.photo)$('preview').src=s.photo.jpeg;else $('preview').removeAttribute('src');
@@ -17,39 +28,41 @@ export function mountCameraPage({win,doc,config=CONFIG}) {
     if(s.message)status(s.message);
   }
   function receive(event){
-    if(closed||event.source!==win.opener||!allowed.includes(event.origin))return;
-    if(!nonce&&validMessage(event.data,TYPES.init)){
-      win.clearTimeout(expiry);win.clearTimeout(readyTimer);origin=event.origin;nonce=event.data.nonce;expiry=win.setTimeout(()=>end('Sessão expirada. Volte ao ponto e abra a câmera novamente.'),config.sessionTimeoutMs);
-      render({phase:'idle',photo:null,message:'Toque em Abrir câmera. Faça uma foto ampla e nítida do local, sem pessoas ou documentos.'});return;
+    if(!alive())return;
+    if(event.source!==expectedOpener){if(allowed.includes(event.origin)&&validMessage(event.data,TYPES.init))issue('SOURCE_REJECTED','A resposta veio de outra janela. Volte ao ponto e abra a câmera novamente.');return;}
+    if(!allowed.includes(event.origin)){if(validMessage(event.data,TYPES.init))issue('ORIGIN_REJECTED','A origem do formulário não está autorizada nesta página. Nenhuma câmera foi acionada.');return;}
+    if(event.data?.type===TYPES.init){
+      if(!validMessage(event.data,TYPES.init)){issue('INIT_INVALID','A resposta de conexão está incompleta. Tente reconectar.');return;}
+      if(nonce&&event.data.nonce!==nonce){status('A resposta pertence a outra sessão. Volte ao ponto e abra a câmera novamente. [NONCE_REJECTED]');return;}
+      if(!nonce){origin=event.origin;nonce=event.data.nonce;win.clearTimeout(readyTimer);win.clearTimeout(warningTimer);$('reconnect').hidden=true;diagnostic='CONNECTED';render({phase:'idle',photo:null,message:'Conectado. Toque em Abrir câmera. Faça uma foto ampla e nítida do local, sem pessoas ou documentos.'});}
+      send(envelope(CONNECTED,nonce),origin);return;
     }
-    if(nonce&&sending&&trustedEvent(event,origin,win.opener)&&validMessage(event.data,TYPES.ack)&&event.data.nonce===nonce){
-      end('Foto devolvida ao formulário. Confira lá se o armazenamento está habilitado. Nenhum ponto foi registrado por esta página.');try{win.close();}catch{}
-    }
+    if(nonce&&sending&&trustedEvent(event,origin,expectedOpener)&&validMessage(event.data,TYPES.ack)&&event.data.nonce===nonce){end('Foto devolvida ao formulário. Confira lá se o armazenamento está habilitado. Nenhum ponto foi registrado por esta página.');try{win.close();}catch{}}
   }
   controller=createCaptureController({mediaDevices:win.navigator.mediaDevices,video:$('video'),canvasFactory:()=>doc.createElement('canvas'),onState:render});
-  $('open').addEventListener('click',()=>{if(nonce&&!closed&&!sending)controller.start();});
-  $('take').addEventListener('click',()=>controller.take());
-  $('retake').addEventListener('click',()=>controller.start());
-  $('discard').addEventListener('click',()=>controller.discard());
+  $('open').addEventListener('click',()=>{if(alive()&&nonce&&!sending)controller.start();});
+  $('take').addEventListener('click',()=>{if(alive())controller.take();});
+  $('retake').addEventListener('click',()=>{if(alive()&&nonce&&!sending)controller.start();});
+  $('discard').addEventListener('click',()=>{if(alive())controller.discard();});
   $('confirm').addEventListener('click',()=>{
-    const photo=controller.getPhoto();if(!photo||!nonce||closed||sending)return;
+    const photo=controller.getPhoto();if(!photo||!alive()||!nonce||sending)return;
     sending=true;locked();status('Devolvendo a foto ao formulário para conferência…');
-    win.opener.postMessage({...envelope(TYPES.photo,nonce),...photo},origin);
-    ackTimeout=win.setTimeout(()=>end('A devolução não foi confirmada. Volte ao ponto e confira antes de tentar novamente.'),8000);
+    if(send({...envelope(TYPES.photo,nonce),...photo},origin))ackTimeout=win.setTimeout(()=>end('A devolução não foi confirmada. Volte ao ponto e confira antes de tentar novamente. [PHOTO_ACK_TIMEOUT]'),8000);
   });
-  $('cancel').addEventListener('click',()=>{if(nonce&&origin&&!closed)win.opener.postMessage(envelope(TYPES.cancel,nonce),origin);end('Captura cancelada. Volte ao formulário.');try{win.close();}catch{}});
+  $('cancel').addEventListener('click',()=>{if(nonce&&origin&&!closed)send(envelope(TYPES.cancel,nonce),origin);end('Captura cancelada. Volte ao formulário.');try{win.close();}catch{}});
   const onVisibility=()=>{if(doc.hidden)controller.hide();};doc.addEventListener('visibilitychange',onVisibility);
   const onPageHide=()=>end('Captura encerrada.');win.addEventListener('pagehide',onPageHide);
-  locked();
-  if(config.enabled!==true||allowed.length===0){end('Protótipo não publicado: hospedagem e origens aguardam aprovação.');}
-  else if(win.top!==win.self||!win.isSecureContext||win.location.protocol!=='https:'||!win.opener){end('Abra esta página pelo botão do formulário de ponto, em uma nova aba segura.');}
+  function ready(){if(!alive()||nonce)return;win.clearTimeout(readyTimer);for(const target of allowed)if(!send(envelope(TYPES.ready),target))return;readyTimer=win.setTimeout(ready,1000);}
+  function reconnect(){if(!alive()||nonce)return;status('Tentando conectar. Se a aba do ponto estiver pausada, volte a ela e depois retorne aqui. Nenhuma câmera foi acionada. [RECONNECTING]');ready();}
+  $('reconnect').addEventListener('click',reconnect);locked();
+  if(config.enabled!==true||allowed.length===0)end('A captura não está habilitada. [CONFIG_DISABLED]');
+  else if(win.top!==win.self||!win.isSecureContext||win.location.protocol!=='https:')end('Abra esta página pelo formulário de ponto em uma nova aba segura. [INVALID_CONTEXT]');
+  else if(!expectedOpener)end('A página não está ligada ao formulário. Abra a câmera pelo botão do ponto. [OPENER_MISSING]');
   else{
-    win.addEventListener('message',receive);status('Conectando ao formulário de ponto…');
-    // Origin is not learned from the URL. Each destination is an explicitly approved exact origin.
-    function ready(){if(closed||nonce)return;for(const target of allowed)win.opener.postMessage(envelope(TYPES.ready),target);readyTimer=win.setTimeout(ready,1000);}
-    ready();
-    expiry=win.setTimeout(()=>end('Não foi possível conectar. Volte ao ponto e tente novamente.'),10000);
+    win.addEventListener('message',receive);status('Conectando ao formulário de ponto…');ready();
+    warningTimer=win.setTimeout(()=>{if(!alive()||nonce||diagnostic!=='WAITING')return;issue('WAITING_FOR_INIT','A conexão está demorando. Tente reconectar; se a aba do ponto estiver pausada, volte a ela e depois retorne aqui. Nenhuma câmera foi acionada.');},10000);
+    expiry=win.setTimeout(()=>alive(),Math.max(0,deadline-now()));
   }
-  return {dispose(){end('Captura encerrada.');doc.removeEventListener('visibilitychange',onVisibility);win.removeEventListener('pagehide',onPageHide);}};
+  return {dispose(){end('Captura encerrada.');}};
 }
 if(typeof window!=='undefined'&&typeof document!=='undefined')mountCameraPage({win:window,doc:document});
