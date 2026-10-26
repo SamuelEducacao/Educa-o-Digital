@@ -23,7 +23,7 @@ export function mountCameraPage({win,doc,config=CONFIG}) {
       render({phase:'idle',photo:null,message:'Toque em Abrir câmera. Fotografe o local, sem pessoas ou documentos.'});return;
     }
     if(nonce&&sending&&trustedEvent(event,origin,win.opener)&&validMessage(event.data,TYPES.ack)&&event.data.nonce===nonce){
-      end('Prévia de teste devolvida ao formulário. A foto não foi salva e nenhum ponto foi registrado.');try{win.close();}catch{}
+      end('Foto devolvida ao formulário. Confira lá se o armazenamento está habilitado. Nenhum ponto foi registrado por esta página.');try{win.close();}catch{}
     }
   }
   controller=createCaptureController({mediaDevices:win.navigator.mediaDevices,video:$('video'),canvasFactory:()=>doc.createElement('canvas'),onState:render});
@@ -33,7 +33,7 @@ export function mountCameraPage({win,doc,config=CONFIG}) {
   $('discard').addEventListener('click',()=>controller.discard());
   $('confirm').addEventListener('click',()=>{
     const photo=controller.getPhoto();if(!photo||!nonce||closed||sending)return;
-    sending=true;locked();status('Devolvendo a prévia de teste. A foto não será salva…');
+    sending=true;locked();status('Devolvendo a foto ao formulário para conferência…');
     win.opener.postMessage({...envelope(TYPES.photo,nonce),...photo},origin);
     ackTimeout=win.setTimeout(()=>end('A devolução não foi confirmada. Volte ao ponto e confira antes de tentar novamente.'),8000);
   });
